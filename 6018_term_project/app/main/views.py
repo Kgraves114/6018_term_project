@@ -1,15 +1,23 @@
 from flask import render_template, redirect, url_for, abort, flash
 from flask_login import login_required, current_user
 from . import main
-from .forms import EditProfileForm, EditProfileAdminForm
+from .forms import EditProfileForm, EditProfileAdminForm, PostForm, InformedConsentForm
 from .. import db
-from ..models import Role, User
+from ..models import Permission, Role, User, Post
 from ..decorators import admin_required
 
 
-@main.route('/')
+@main.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+    form = PostForm()
+    if current_user.can(Permission.WRITE) and form.validate_on_submit():
+        post = Post(body=form.body.data,
+                    author=current_user._get_current_object())
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('.index'))
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    return render_template('index.html', form=form, posts=posts)
 
 
 @main.route('/user/<username>')
@@ -62,3 +70,19 @@ def edit_profile_admin(id):
     form.location.data = user.location
     form.about_me.data = user.about_me
     return render_template('edit_profile.html', form=form, user=user)
+
+@main.route('/informed-consent', methods=['GET', 'POST'])
+def informed_consent():
+    form = InformedConsentForm()
+    if form.validate_on_submit():
+        current_user.institution = form.institution.data
+        current_user.study_name = form.study_name.data
+        current_user.study_objective = form.study_objective.data
+        db.session.add(current_user._get_current_object())
+        db.session.commit()
+        flash('Your Consent Form has been updated.')
+        return redirect(url_for('.user', username=current_user.username))
+    form.institution.data = current_user.institution
+    form.study_name.data = current_user.study_name
+    form.study_objective.data = current_user.study_objective
+    return render_template('icf.html', form=form)
