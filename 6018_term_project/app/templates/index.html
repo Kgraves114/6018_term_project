@@ -5,7 +5,11 @@
 
 {% block page_content %}
 <div class="page-header">
-    <h3 align="center">Hello! Let's work on the consent for {% if current_user.is_authenticated %}{{ current_user.studyname }}{% endif %}!</h3>
+  {% if current_user.is_authenticated %}
+    <h3 align="center">Hello! Let's work on the consent for {{ current_user.studyname }}!</h3>
+  {% else %}
+    <h3 align="center">Hello! Login and let's get to work on your consent!</h3>
+    {% endif %}
 </div>
 <div align="center">
 
