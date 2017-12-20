@@ -4,7 +4,7 @@ from wtforms import StringField, TextAreaField, BooleanField, SelectField,\
 from wtforms.validators import DataRequired, Length, Email, Regexp
 from wtforms import ValidationError
 from flask_pagedown.fields import PageDownField
-from ..models import Role, User
+from ..models import Role, Study
 
 
 class NameForm(FlaskForm):
@@ -12,10 +12,13 @@ class NameForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
-class EditProfileForm(FlaskForm):
-    name = StringField('Real name', validators=[Length(0, 64)])
-    location = StringField('Location', validators=[Length(0, 64)])
-    about_me = TextAreaField('About me')
+class EditConsentForm(FlaskForm):
+    investigator = StringField('''Principal Investigator's name''', validators=[Length(0, 64)])
+    location = StringField('Site name', validators=[Length(0, 64)])
+    background = TextAreaField('Enter Study Background Information')
+    study_procedure = TextAreaField('Enter Study Procedure Information')
+    risksbenefits = TextAreaField('Enter Risks and Benefits of Study')
+    PHI = TextAreaField('Enter Protected Health Information (PHI) Language')
     submit = SubmitField('Submit')
 
 
@@ -53,10 +56,4 @@ class EditProfileAdminForm(FlaskForm):
 
 class PostForm(FlaskForm):
     body = PageDownField("What's on your mind?", validators=[DataRequired()])
-    submit = SubmitField('Submit')
-
-class InformedConsentForm(FlaskForm):
-    institution = StringField('Institution Name', validators=[Length(0, 64)])
-    study_name = StringField('Name of Study', validators=[Length(0, 255)])
-    study_objective = TextAreaField('Study Objective')
     submit = SubmitField('Submit')

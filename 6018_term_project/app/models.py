@@ -23,7 +23,7 @@ class Role(db.Model):
     name = db.Column(db.String(64), unique=True)
     default = db.Column(db.Boolean, default=False, index=True)
     permissions = db.Column(db.Integer)
-    users = db.relationship('User', backref='role', lazy='dynamic')
+    study = db.relationship('Study', backref='role', lazy='dynamic')
 
     def __init__(self, **kwargs):
         super(Role, self).__init__(**kwargs)
@@ -70,27 +70,28 @@ class Role(db.Model):
         return '<Role %r>' % self.name
 
 
-class User(UserMixin, db.Model):
-    __tablename__ = 'users'
+class Study(UserMixin, db.Model):
+    __tablename__ = 'study'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
-    username = db.Column(db.String(64), unique=True, index=True)
+    studyname = db.Column(db.String(64), unique=True, index=True)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
-    name = db.Column(db.String(64))
+    investigator = db.Column(db.String(64))
     location = db.Column(db.String(64))
-    about_me = db.Column(db.Text())
+    background = db.Column(db.Text())
+    study_procedure = db.Column(db.Text())
+    risksbenefits = db.Column(db.Text())
+    PHI = db.Column(db.Text())
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     avatar_hash = db.Column(db.String(32))
     posts = db.relationship('Post', backref='author', lazy='dynamic')
-    institution = db.Column(db.String(64))
-    study_name = db.Column(db.String(255))
-    study_objective = db.Column(db.Text())
+
 
     def __init__(self, **kwargs):
-        super(User, self).__init__(**kwargs)
+        super(Study, self).__init__(**kwargs)
         if self.role is None:
             if self.email == current_app.config['FLASKY_ADMIN']:
                 self.role = Role.query.filter_by(name='Administrator').first()
@@ -137,11 +138,11 @@ class User(UserMixin, db.Model):
             data = s.loads(token.encode('utf-8'))
         except:
             return False
-        user = User.query.get(data.get('reset'))
-        if user is None:
+        study = Study.query.get(data.get('reset'))
+        if study is None:
             return False
-        user.password = new_password
-        db.session.add(user)
+        study.password = new_password
+        db.session.add(study)
         return True
 
     def generate_email_change_token(self, new_email, expiration=3600):
@@ -187,7 +188,7 @@ class User(UserMixin, db.Model):
             url=url, hash=hash, size=size, default=default, rating=rating)
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return '<Study %r>' % self.studyname
 
 
 class AnonymousUser(AnonymousUserMixin):
@@ -201,8 +202,8 @@ login_manager.anonymous_user = AnonymousUser
 
 
 @login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+def load_study(study_id):
+    return Study.query.get(int(study_id))
 
 
 class Post(db.Model):
@@ -211,7 +212,7 @@ class Post(db.Model):
     body = db.Column(db.Text)
     body_html = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    author_id = db.Column(db.Integer, db.ForeignKey('study.id'))
 
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
@@ -223,10 +224,3 @@ class Post(db.Model):
             tags=allowed_tags, strip=True))
 
 db.event.listen(Post.body, 'set', Post.on_changed_body)
-
-class consent(db.Model):
-    __tablename__ = 'consents'
-    id = db.Column(db.Integer, primary_key=True)
-    institution = db.Column(db.String(64))
-    study_name = db.Column(db.String(255))
-    study_objective = db.Column(db.Text)

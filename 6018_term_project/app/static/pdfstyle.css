@@ -1,0 +1,22 @@
+body { font: 12px Fontin, arial }
+nav { font-size: 12px }
+
+h3, h5 {
+    text-align: center;
+}
+
+@page {
+  size: A5;
+  margin: 1.5cm;
+  @top-left {
+    content: "{{ study.studyname }}";
+  }
+  @top-right{
+    content: "Page " counter(page) " of " counter(pages);
+  }
+}
+
+
+@media print {
+    nav { display: none }
+}
