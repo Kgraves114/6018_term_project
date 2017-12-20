@@ -10,14 +10,15 @@ h3, h5 {
   font-size: 1em
   size: A5;
   margin: 1.5cm;
-  @top-left {
-    content: "{{ study.studyname }}";
-  }
   @top-right{
     content: "Page " counter(page) " of " counter(pages);
   }
 }
-
+@page {
+  @top-left{
+    content: "Test Study"; #WeasyPrint can't call an html variable so the studyname has to be hard-coded
+    }
+}
 
 @media print {
     nav { display: none }
